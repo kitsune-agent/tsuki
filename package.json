@@ -1,0 +1,44 @@
+{
+  "name": "@kitsune-agent/tsuki",
+  "version": "1.0.0",
+  "description": "tsuki (月) — Generate narrative work reports from git history. Zero AI. Deterministic. Instant.",
+  "main": "dist/src/index.js",
+  "bin": {
+    "tsuki": "dist/src/index.js"
+  },
+  "scripts": {
+    "build": "tsc",
+    "test": "node --test dist/test/*.test.js",
+    "prepublishOnly": "npm run build"
+  },
+  "keywords": [
+    "git",
+    "report",
+    "changelog",
+    "work-report",
+    "developer-tools",
+    "cli",
+    "zero-dependency",
+    "ai-free"
+  ],
+  "author": "kitsune-agent",
+  "license": "MIT",
+  "homepage": "https://github.com/kitsune-agent/tsuki",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/kitsune-agent/tsuki.git"
+  },
+  "files": [
+    "dist/**/*.js",
+    "dist/**/*.d.ts",
+    "README.md",
+    "LICENSE"
+  ],
+  "engines": {
+    "node": ">=18.0.0"
+  },
+  "devDependencies": {
+    "@types/node": "^25.3.3",
+    "typescript": "^5.4.0"
+  }
+}
