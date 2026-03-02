@@ -18,22 +18,41 @@ export function buildTimeline(commits: GitCommit[], since: string, until: string
     dayCounts.set(day, (dayCounts.get(day) || 0) + 1);
   }
 
-  // Build a complete range of days
-  const start = parseDate(since);
-  const end = parseDate(until);
-  const days: DayActivity[] = [];
+  // Build a complete range of days.
+  // Try parsing since/until; if they're relative strings (e.g. "7 days ago", "now"),
+  // derive the range from actual commit dates instead.
+  let start = parseDate(since);
+  let end = parseDate(until);
 
+  const isRelative = (s: string) => /\b(ago|yesterday|today|last|this|now)\b/i.test(s);
+  const startValid = !isNaN(start.getTime()) && !isRelative(since);
+  const endValid = !isNaN(end.getTime()) && !isRelative(until);
+
+  // If we can't resolve the range from strings, derive from commit data
+  if (!startValid || !endValid) {
+    if (dayCounts.size > 0) {
+      const sortedDays = [...dayCounts.keys()].sort();
+      if (!startValid) start = new Date(sortedDays[0]);
+      if (!endValid) end = new Date(sortedDays[sortedDays.length - 1]);
+    } else {
+      return [];
+    }
+  }
+
+  const days: DayActivity[] = [];
   const current = new Date(start);
-  while (current <= end) {
+  let safety = 0;
+  while (current <= end && safety < 365) {
     const dateStr = formatDate(current);
     days.push({
       date: dateStr,
       commits: dayCounts.get(dateStr) || 0,
     });
     current.setDate(current.getDate() + 1);
+    safety++;
   }
 
-  // If no days were generated (invalid range), just return what we have from commits
+  // Fallback: if no days generated, return from commit data directly
   if (days.length === 0) {
     const sortedDates = [...dayCounts.entries()].sort((a, b) => a[0].localeCompare(b[0]));
     return sortedDates.map(([date, count]) => ({ date, commits: count }));
@@ -73,7 +92,6 @@ export function renderTimelineChart(days: DayActivity[], maxBarWidth: number = 4
 function parseDate(dateStr: string): Date {
   const d = new Date(dateStr);
   if (isNaN(d.getTime())) {
-    // If we can't parse it, return today as fallback
     return new Date();
   }
   return d;
